@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Quick Doctor</title>
-    <link rel="stylesheet" href="/style.css" />
+    <title>Quick Doctor - AI Medical Assistant</title>
+    <link rel="stylesheet" href="style.css" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  </head>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
   <body>
     <div class="app">
       <!-- Sidebar -->
@@ -27,14 +27,16 @@
       <!-- Main Content -->
       <div class="main-content">
         <header class="app-header">
-          <img src="/assets/logo.png" alt="Quick Doctor logo" id="logo" onerror="this.style.display='none'" />
-          <h1>Quick Doctor</h1>
+          <div class="logo-container">
+            <img src="https://image2url.com/images/1761922094366-1acbd073-001d-42b5-bed3-f53667f7044b.png" alt="Quick Doctor logo" id="logo" />
+            <h1>Quick Doctor</h1>
+          </div>
         </header>
 
         <main class="chat-area">
           <!-- Hero shown when no conversation exists -->
           <div class="hero" id="hero">
-            <h2>What can I help with?</h2>
+            <img src="https://image2url.com/images/1761922094366-1acbd073-001d-42b5-bed3-f53667f7044b.png" alt="Illustration of a friendly doctor" class="hero-image" />
             <div class="hero-input" id="heroInput" tabindex="0">Describe symptoms or ask a question — e.g. "fever and cough for 2 days"</div>
           </div>
 
@@ -76,7 +78,6 @@
             </div>
           </form>
           <footer class="footer">
-            <small>For educational & informational use only. Not a substitute for professional medical care. In emergencies, seek immediate medical attention.</small>
           </footer>
         </div>
       </div>
