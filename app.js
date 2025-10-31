@@ -1,156 +1,115 @@
+document.addEventListener('DOMContentLoaded', () => {
+  const inputForm = document.getElementById('inputForm');
+  const inputBox = document.getElementById('inputBox');
+  const messages = document.getElementById('messages');
+  const hero = document.getElementById('hero');
+  const clearBtn = document.getElementById('clearBtn');
+  const chatHistory = document.getElementById('chatHistory');
 
-const messagesEl = document.getElementById('messages');
-const inputForm = document.getElementById('inputForm');
-const inputBox = document.getElementById('inputBox');
-const clearBtn = document.getElementById('clearBtn');
-const patientAge = document.getElementById('patientAge');
-const patientGender = document.getElementById('patientGender');
-const chatHistory = document.getElementById('chatHistory');
-const newChatBtn = document.querySelector('.new-chat');
+  let conversationId = Date.now().toString();
 
-// Auto-resize textarea
-inputBox.addEventListener('input', function() {
-  this.style.height = 'auto';
-  this.style.height = (this.scrollHeight) + 'px';
-});
+  // Auto-resize textarea
+  inputBox.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = (this.scrollHeight) + 'px';
+  });
 
-function appendMessage(text, who = 'bot') {
-  const wrapper = document.createElement('div');
-  wrapper.className = 'msg-wrapper';
-  
-  const el = document.createElement('div');
-  el.className = 'msg ' + (who === 'user' ? 'user' : 'bot');
-  
-  // Add icon for the message
-  const icon = document.createElement('span');
-  icon.className = 'material-icons';
-  icon.textContent = who === 'user' ? 'account_circle' : 'medical_services';
-  
-  el.textContent = text;
-  
-  wrapper.appendChild(el);
-  messagesEl.appendChild(wrapper);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-  
-  // Add to chat history if it's the first message in a new chat
-  if (who === 'user' && messagesEl.children.length <= 2) {
-    addChatToHistory(text);
-  }
-}
-
-// Hero show/hide logic
-const heroEl = document.getElementById('hero');
-const heroInput = document.getElementById('heroInput');
-function hideHero(){ if(heroEl) heroEl.style.display = 'none'; }
-function showHero(){ if(heroEl) heroEl.style.display = 'block'; }
-
-// When appending a user message, hide hero
-const _appendMessage = appendMessage;
-appendMessage = function(text, who='bot'){
-  if(who === 'user') hideHero();
-  _appendMessage(text, who);
-}
-
-inputForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const symptoms = inputBox.value.trim();
-  if (!symptoms) return;
-
-  const age = patientAge.value;
-  if (!age) {
-    alert('Please select an age group');
-    patientAge.focus();
-    return;
-  }
-
-  // Construct the input with patient info
-  const fullInput = `Patient Info:
-Age Group: ${age}
-${patientGender.value ? `Gender: ${patientGender.value}` : ''}
-
-Symptoms:
-${symptoms}`;
-
-  appendMessage(fullInput, 'user');
-  inputBox.value = '';
-  appendMessage('Analyzing symptoms...', 'bot');
-
-  try {
-    const resp = await fetch('/api/diagnose', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: fullInput })
-    });
-    
-    const data = await resp.json();
-    
-    // Remove the "Analyzing" placeholder
-    const last = messagesEl.querySelector('.msg.bot:last-child');
-    if (last && last.textContent === 'Analyzing symptoms...') {
-      last.remove();
-    }
-
-    if (data.error) {
-      appendMessage('Error: ' + (data.error || 'Unknown error occurred'), 'bot');
-      return;
-    }
-
-    if (data.source === 'openai' && data.text) {
-      appendMessage(data.text, 'bot');
-    } else if (data.diagnosis) {
-      appendMessage(data.diagnosis + '\n\n' + (data.note || ''), 'bot');
-    } else {
-      appendMessage('Unexpected response format. Please try again.', 'bot');
-    }
-  } catch (err) {
-    const last = messagesEl.querySelector('.msg.bot:last-child');
-    if (last && last.textContent === 'Analyzing symptoms...') {
-      last.remove();
-    }
-    appendMessage('Network or server error. Please try again later.', 'bot');
-    console.error('Error:', err);
-  }
-});
-
-clearBtn.addEventListener('click', () => {
-  if (confirm('Clear all messages?')) {
-    messagesEl.innerHTML = '';
-    appendMessage('Welcome to Quick Doctor — describe symptoms and get simple guidance. For emergencies, seek immediate care.', 'bot');
-  }
-});
-
-// Chat history functionality
-function addChatToHistory(text) {
-  const historyItem = document.createElement('div');
-  historyItem.className = 'history-item';
-  
-  const icon = document.createElement('span');
-  icon.className = 'material-icons';
-  icon.textContent = 'chat';
-  
-  const title = document.createElement('span');
-  title.textContent = text.split('\n')[0].substring(0, 30) + '...';
-  
-  historyItem.appendChild(icon);
-  historyItem.appendChild(title);
-  chatHistory.insertBefore(historyItem, chatHistory.firstChild);
-}
-
-// New chat button
-newChatBtn.addEventListener('click', () => {
-  if (confirm('Start a new chat? Current conversation will be cleared.')) {
-    messagesEl.innerHTML = '';
-    showHero();
-    patientAge.value = '';
-    patientGender.value = '';
+  // Clear conversation
+  clearBtn.addEventListener('click', () => {
+    messages.innerHTML = '';
+    hero.style.display = 'block';
     inputBox.value = '';
+    inputBox.style.height = 'auto';
+    conversationId = Date.now().toString();
+    
+    // Add to chat history
+    addToChatHistory('New Chat', conversationId);
+  });
+
+  // Handle form submission
+  inputForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const patientAge = document.getElementById('patientAge').value;
+    const patientGender = document.getElementById('patientGender').value;
+    const userInput = inputBox.value.trim();
+
+    if (!patientAge || !userInput) return;
+
+    // Hide hero section if visible
+    if (hero.style.display !== 'none') {
+      hero.style.display = 'none';
+    }
+
+    // Add user message
+    addMessage('user', userInput);
+
+    // Clear input
+    inputBox.value = '';
+    inputBox.style.height = 'auto';
+
+    // Add typing indicator
+    const typingIndicator = addMessage('assistant', '<div class="typing-indicator">●●●</div>');
+
+    try {
+      // Simulate AI response (replace with actual API call)
+      const response = await simulateAIResponse(patientAge, patientGender, userInput);
+      
+      // Replace typing indicator with response
+      typingIndicator.querySelector('.message-content').innerHTML = response;
+
+      // Update chat history with first line of user input
+      const firstLine = userInput.split('\\n')[0];
+      addToChatHistory(firstLine, conversationId);
+
+    } catch (error) {
+      typingIndicator.querySelector('.message-content').innerHTML = 
+        'I apologize, but I encountered an error. Please try again.';
+    }
+  });
+
+  function addMessage(role, content) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${role}`;
+    messageDiv.innerHTML = `
+      <div class="avatar">
+        <span class="material-icons">${role === 'user' ? 'person' : 'medical_services'}</span>
+      </div>
+      <div class="message-content">${content}</div>
+    `;
+    messages.appendChild(messageDiv);
+    messages.scrollTop = messages.scrollHeight;
+    return messageDiv;
+  }
+
+  function addToChatHistory(title, id) {
+    const historyItem = document.createElement('div');
+    historyItem.className = 'chat-history-item';
+    historyItem.dataset.id = id;
+    historyItem.innerHTML = `
+      <span class="material-icons">chat</span>
+      <span>${title.substring(0, 30)}${title.length > 30 ? '...' : ''}</span>
+    `;
+    
+    // Add to beginning of history
+    if (chatHistory.firstChild) {
+      chatHistory.insertBefore(historyItem, chatHistory.firstChild);
+    } else {
+      chatHistory.appendChild(historyItem);
+    }
+  }
+
+  async function simulateAIResponse(age, gender, input) {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+    
+    // This is a mock response. Replace with actual API integration
+    const responses = [
+      "Based on the symptoms you've described, this could be indicative of several conditions. However, I want to emphasize that I can only provide general information and cannot give a diagnosis. It's important to consult with a healthcare provider for proper evaluation.",
+      "While I can offer some general health information, please note that this isn't a substitute for professional medical advice. Given what you've shared, here are some general considerations...",
+      "Thank you for providing those details. While I can share some general information about these symptoms, it's important to understand that only a qualified healthcare provider can properly evaluate your condition.",
+    ];
+    
+    return responses[Math.floor(Math.random() * responses.length)];
   }
 });
-
-// Hero input click focuses the textarea
-if(heroInput){
-  heroInput.addEventListener('click', ()=>{ hideHero(); inputBox.focus(); });
-}
-
-// Show hero initially
-showHero();
