@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick Doctor</title>
+    <link rel="stylesheet" href="/style.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  </head>
+  <body>
+    <div class="app">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <button class="new-chat">
+          <span class="material-icons">add</span>
+          New chat
+        </button>
+        <div class="history" id="chatHistory">
+          <!-- Chat history items will be added here -->
+        </div>
+        <div class="user-section">
+          <span class="material-icons">account_circle</span>
+          Quick Doctor
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <header class="app-header">
+          <img src="/assets/logo.png" alt="Quick Doctor logo" id="logo" onerror="this.style.display='none'" />
+          <h1>Quick Doctor</h1>
+        </header>
+
+        <main class="chat-area">
+          <!-- Hero shown when no conversation exists -->
+          <div class="hero" id="hero">
+            <h2>What can I help with?</h2>
+            <div class="hero-input" id="heroInput" tabindex="0">Describe symptoms or ask a question — e.g. "fever and cough for 2 days"</div>
+          </div>
+
+          <div id="messages" class="messages" aria-live="polite"></div>
+        </main>
+
+        <div class="input-container">
+          <form id="inputForm" class="input-form">
+            <div class="patient-info">
+              <select id="patientAge" required>
+                <option value="">Age group</option>
+                <option value="infant">Infant (0-2)</option>
+                <option value="child">Child (3-12)</option>
+                <option value="teen">Teen (13-19)</option>
+                <option value="adult">Adult (20-60)</option>
+                <option value="elderly">Elderly (60+)</option>
+              </select>
+              <select id="patientGender">
+                <option value="">Gender (optional)</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other/Prefer not to say</option>
+              </select>
+            </div>
+
+            <textarea 
+              id="inputBox" 
+              placeholder="Describe symptoms (e.g. fever, cough, stomach pain). Be as specific as possible about: When did it start? How severe? Any other conditions?" 
+              rows="1"
+              required></textarea>
+
+            <div class="actions">
+              <button type="button" id="clearBtn" class="muted">
+                <span class="material-icons">clear_all</span>
+              </button>
+              <button type="submit" id="sendBtn">
+                <span class="material-icons">send</span>
+              </button>
+            </div>
+          </form>
+          <footer class="footer">
+            <small>For educational & informational use only. Not a substitute for professional medical care. In emergencies, seek immediate medical attention.</small>
+          </footer>
+        </div>
+      </div>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
